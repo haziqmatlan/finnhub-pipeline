@@ -1,0 +1,58 @@
+name: Data Pipeline Job Deployment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        type: string
+        required: true
+      space:
+        type: string
+        required: true
+      job_type:
+        type: string
+        required: true
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+      DATABRICKS_HOST:
+        required: true 
+      DATABRICKS_TOKEN:
+        required: true
+
+jobs:
+  deploy-and-launch:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}_${{ inputs.space}}
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
+      DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.8'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip setuptools wheel
+          pip install -e ".[dev]"
+          pip install databricks-cli
+
+      - name: Configure Databricks CLI
+        run: |
+          databricks configure --token <<< "$DATABRICKS_HOST\n$DATABRICKS_TOKEN"
+
+      - name: Deploy DAB job
+        run: |
+          databricks bundle deploy -t ${{ inputs.environment}}_${{ inputs.space}}
+
+      - name: Launch DAB job
+        run: |
+          databricks bundle run -t ${{ inputs.environment }}_${{ inputs.space }} data-pipeline \
+      

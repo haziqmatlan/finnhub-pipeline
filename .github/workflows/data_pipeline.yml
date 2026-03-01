@@ -1,0 +1,46 @@
+name: Data Pipeline Launch Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        options:
+          - dev
+          - test
+          - prod
+        description: 'Select the environment to deploy'
+        default: dev
+        required: true
+      space:
+        type: choice
+        options:
+          - feature
+          - synthetic
+          - release
+        description: 'Select the space to deploy'
+        default: feature
+        required: true
+      job_type:
+        type: choice
+        options:
+          - data_pipeline
+          - model_training
+          - model_evaluation
+        description: 'Select the job type to run'
+        default: data_pipeline
+        required: true
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  workflow-deploy-and-launch:
+    uses: ./.github/workflows/data_pipeline_launch_workflow.yml
+    with:
+      environment: ${{ inputs.environment }}
+      space: ${{ inputs.space }}
+      job_type: ${{ inputs.job_type }}
+    secrets: inherit
+  
