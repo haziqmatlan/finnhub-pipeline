@@ -46,7 +46,7 @@ jobs:
 
       - name: Configure Databricks CLI
         run: |
-          databricks configure --token <<< "$DATABRICKS_HOST\n$DATABRICKS_TOKEN"
+          databricks configure --token <<< "${{ secrets.DATABRICKS_HOST }}\n${{ secrets.DATABRICKS_TOKEN }}"
 
       - name: Deploy DAB job
         run: |
