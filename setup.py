@@ -14,6 +14,8 @@ PACKAGES_REQUIREMENT = [
 DEV_PACKAGE_REQUIREMENT = [
     "pyspark==3.3.0",
     "dbx>=0.8.19",
+    "wheel",
+    "pyyaml==6.0",
     "mlflow",
     "delta-spark==2.1.0",
     "black==22.8.0",
