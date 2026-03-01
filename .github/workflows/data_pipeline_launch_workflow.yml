@@ -13,7 +13,7 @@ on:
         type: string
         required: true
     secrets:
-      GITHUB_TOKEN:
+      GIT_TOKEN:
         required: true
       DATABRICKS_HOST:
         required: true 
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     environment: ${{ inputs.environment }}_${{ inputs.space}}
     env:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     
