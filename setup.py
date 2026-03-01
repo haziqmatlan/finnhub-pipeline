@@ -7,7 +7,7 @@ GIT_TOKEN = os.getenv("GIT_TOKEN")
 
 PACKAGES_REQUIREMENT = [
     "nameparser==1.1.2",
-    "PyYAML==6.0",
+    "PyYAML>=6.0.1",
     "python-dotenv==1.0.0"
     ]
 
@@ -15,7 +15,7 @@ DEV_PACKAGE_REQUIREMENT = [
     "pyspark==3.3.0",
     "dbx>=0.8.19",
     "wheel",
-    "pyyaml==6.0",
+    # "pyyaml==6.0",
     "mlflow",
     "delta-spark==2.1.0",
     "black==22.8.0",
