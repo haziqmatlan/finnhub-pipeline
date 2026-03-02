@@ -24,7 +24,7 @@ targets:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
                 parameters:
-                  - "pipelines.data_pipeline.raw"
+                  - "pipelines.data_pipeline.raw.test"
                   - "--env"
                   - "dev"
                   - "--space"
