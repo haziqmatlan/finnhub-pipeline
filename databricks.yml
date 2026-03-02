@@ -22,7 +22,7 @@ targets:
               environment_key: "serverless_env"
               python_wheel_task:
                 package_name: "pipelines"
-                entry_point: "data-pipeline-etl"
+                entry_point: "etl_pipeline"
                 parameters:
                   - "pipelines.data_pipeline.raw"
                   - "--env"

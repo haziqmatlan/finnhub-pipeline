@@ -22,7 +22,8 @@ def main():
 
     # Load the modules to execute the Subparser decorator
     modules = [
-        'pipelines.core'
+        'pipelines.core',
+        'pipelines.data_pipeline'
     ]
     for m in modules:
         import_module(m)
