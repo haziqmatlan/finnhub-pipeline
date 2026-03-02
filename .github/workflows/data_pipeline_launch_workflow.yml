@@ -65,7 +65,7 @@ jobs:
 
       - name: Launch DAB job
         run: |
-          databricks bundle run -t ${{ inputs.environment }}_${{ inputs.space }} finnhub_data_pipeline \
+          databricks bundle run -t ${{ inputs.environment }}_${{ inputs.space }} finnhub-pipeline \
             --python-named-params env=${{ inputs.environment }} \
             --python-named-params space=${{ inputs.space }} \
             --python-named-params job_type=${{ inputs.job_type }}
