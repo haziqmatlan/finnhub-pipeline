@@ -21,7 +21,7 @@ targets:
             - task_key: "data_generation_task"
               environment_key: "serverless_env"
               python_wheel_task:
-                package_name: "finnhub-pipeline"
+                package_name: "pipelines"
                 entry_point: "data-pipeline-etl"
                 parameters:
                   - "finnhub_pipeline.pipelines.data_pipeline.raw"
