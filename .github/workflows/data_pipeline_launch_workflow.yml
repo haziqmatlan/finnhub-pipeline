@@ -68,6 +68,5 @@ jobs:
           databricks bundle run -t ${{ inputs.environment }}_${{ inputs.space }} data-pipeline \
             --python-named-params env=${{ inputs.environment }} \
             --python-named-params space=${{ inputs.space }} \
-            --python-named-params object_type=${{ inputs.object_type }} \
             --python-named-params job_type=${{ inputs.job_type }}
       
