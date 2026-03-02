@@ -29,3 +29,12 @@ targets:
                   - "dev"
                   - "--space"
                   - "feature"
+
+          # Serverless environment config (serverless, libraries go in environments.spec.dependencies)
+          environments:
+            - environment_key: "serverless_env"
+              spec:
+                client: "1"  # Required for serverless compute
+                dependencies:
+                  - ./dist/*.whl  # Wheel library specified here for serverless
+          timeout_seconds: 3600
