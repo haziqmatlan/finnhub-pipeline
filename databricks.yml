@@ -6,7 +6,7 @@ bundle:
   name: finnhub-pipeline
 
 targets:
-  dev:
+  dev_feature:
     mode: development
     default: true
     workspace:
