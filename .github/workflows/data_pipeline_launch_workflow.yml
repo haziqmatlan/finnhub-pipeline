@@ -42,7 +42,6 @@ jobs:
         run: |
           python -m pip install --upgrade pip setuptools wheel
           pip install -e ".[dev]"
-          pip install databricks-cli
 
       # Install Databricks CLI (unified CLI for DAB)
       - name: Install Databricks CLI
@@ -58,6 +57,9 @@ jobs:
           ${{ secrets.DATABRICKS_HOST }}
           ${{ secrets.DATABRICKS_TOKEN }}
           EOF
+
+      - name: Build Wheel
+        run: python setup.py bdist_wheel
 
       - name: Deploy DAB job
         run: |

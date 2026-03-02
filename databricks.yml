@@ -24,7 +24,7 @@ targets:
                 package_name: "pipelines"
                 entry_point: "data-pipeline-etl"
                 parameters:
-                  - "finnhub_pipeline.pipelines.data_pipeline.raw"
+                  - "pipelines.data_pipeline.raw"
                   - "--env"
                   - "dev"
                   - "--space"
