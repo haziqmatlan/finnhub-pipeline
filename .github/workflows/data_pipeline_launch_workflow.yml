@@ -44,6 +44,14 @@ jobs:
           pip install -e ".[dev]"
           pip install databricks-cli
 
+      # Install Databricks CLI (unified CLI for DAB)
+      - name: Install Databricks CLI
+        run: |
+          curl -fsSL https://raw.githubusercontent.com/databricks/setup-cli/main/install.sh | sh
+          # Prepend the new CLI path to ensure it's used first
+          echo "/usr/local/bin" >> $GITHUB_PATH
+          echo "$HOME/.databrickscli" >> $GITHUB_PATH
+
       - name: Configure Databricks CLI
         run: |
           databricks configure --token <<EOF
