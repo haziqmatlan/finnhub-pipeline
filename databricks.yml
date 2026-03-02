@@ -12,8 +12,20 @@ targets:
     workspace:
       host: https://dbc-85dd8f04-671b.cloud.databricks.com
 
-  ## Optionally, there could be 'staging' or 'prod' targets here.
-  #
-  # prod:
-  #   workspace:
-  #     host: https://dbc-85dd8f04-671b.cloud.databricks.com
+    resources:
+      jobs:
+        finnhub-pipeline:
+          name: "data_pipeline_master"
+          tasks:
+          # Dataset Generation --------------------
+            - task_key: "data_generation_task"
+              environment_key: "serverless_env"
+              python_wheel_task:
+                package_name: "data_pipeline"
+                entry_point: "data-pipeline-etl"
+                parameters:
+                  - "data_pipeline.data_generation.task.generate_data_task"
+                  - "--env"
+                  - "dev"
+                  - "--space"
+                  - "feature"
