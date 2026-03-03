@@ -5,12 +5,15 @@ def package_install(package):
 
 GIT_TOKEN = os.getenv("GIT_TOKEN")
 
+# Core dependencies that will be installed when package is deployed/installed in production (e.g.: when the Databricks job runs)
 PACKAGES_REQUIREMENT = [
     "nameparser==1.1.2",
     "PyYAML>=6.0.1",
-    "python-dotenv==1.0.0"
+    "python-dotenv==1.0.0",
+    "kafka-python==2.0.2"
     ]
 
+# Additional dependencies for development (e.g.: for local testing, CI/CD pipeline) - not installed in production environment (not included when the job runs on Databricks)
 DEV_PACKAGE_REQUIREMENT = [
     "pyspark==3.3.0",
     "dbx>=0.8.19",
@@ -22,8 +25,7 @@ DEV_PACKAGE_REQUIREMENT = [
     "numpy==1.23.1",
     "urllib3<2",
     "typing_extensions==4.5.0",
-    "psycopg2-binary==2.9.9",
-    "kafka-python==2.0.2"
+    "psycopg2-binary==2.9.9"
 ]
 
 current_dir = pathlib.Path(__file__).parent.resolve()
