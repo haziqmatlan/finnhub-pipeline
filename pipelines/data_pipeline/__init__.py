@@ -15,7 +15,7 @@ def build_subparsers(subparsers) -> list[ArgumentParser]:
     parsers: list[ArgumentParser] = []
     parser: ArgumentParser
 
-    task = 'pipelines.data_pipeline.raw.test'
+    task = 'pipelines.data_pipeline.raw.stream_finnhub_to_kafka'
     parser = subparsers.add_parser(task)
     parser.set_defaults(command=task)
     parser.add_argument('-b', '--bucket', help='S3 bucket')
