@@ -22,7 +22,8 @@ DEV_PACKAGE_REQUIREMENT = [
     "numpy==1.23.1",
     "urllib3<2",
     "typing_extensions==4.5.0",
-    "psycopg2-binary==2.9.9"
+    "psycopg2-binary==2.9.9",
+    "kafka-python==2.0.2"
 ]
 
 current_dir = pathlib.Path(__file__).parent.resolve()
