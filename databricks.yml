@@ -24,7 +24,7 @@ targets:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
                 parameters:
-                  - "pipelines.data_pipeline.raw.test"
+                  - "pipelines.data_pipeline.raw.stream_finnhub_to_kafka"
                   - "--env"
                   - "dev"
                   - "--space"
