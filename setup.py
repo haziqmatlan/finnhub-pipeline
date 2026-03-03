@@ -29,7 +29,7 @@ current_dir = pathlib.Path(__file__).parent.resolve()
 long_description = (current_dir / 'README.md').read_text(encoding='utf-8')
 
 setuptools.setup(
-    name="pipelines",   # Need to match with package directory name (as oer entry point in console_scripts)
+    name="pipelines",   # Need to match with package directory name (as per entry point in console_scripts)
     version="1.0.1",
     author="Haziq Matlan",
     author_email="haziq.matlan@gmail.com",
