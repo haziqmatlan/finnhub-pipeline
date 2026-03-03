@@ -38,20 +38,22 @@ def on_close(ws, close_status_code, close_msg):
 def on_open(ws):
     ws.send(' {"type": "subscribe", "symbol": "BINANCE:BTCUSDT"} ') 
     print("Subscribed to BINANCE:BTCUSDT...")
-    
-ws = websocket.WebSocketApp(
-    f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
-    on_open=on_open,
-    on_message=on_message,
-    on_error=on_error,
-    on_close=on_close
-    )
 
-thread = threading.Thread(target=ws.run_forever)
-thread.start()
-time.sleep(10)  # Keep the main thread alive for 10 seconds to receive messages
 
-ws.keep_running = False # Signal the WebSocket run_forever() to stop 
-ws.close()              # Close the WebSocket connection gracefully
-thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
-print("WebSocket connection closed, thread joined...")
+def etl_process(**options):
+    ws = websocket.WebSocketApp(
+        f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
+        on_open=on_open,
+        on_message=on_message,
+        on_error=on_error,
+        on_close=on_close
+        )
+
+    thread = threading.Thread(target=ws.run_forever)
+    thread.start()
+    time.sleep(10)  # Keep the main thread alive for 10 seconds to receive messages
+
+    ws.keep_running = False # Signal the WebSocket run_forever() to stop 
+    ws.close()              # Close the WebSocket connection gracefully
+    thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
+    print("WebSocket connection closed, thread joined...")
