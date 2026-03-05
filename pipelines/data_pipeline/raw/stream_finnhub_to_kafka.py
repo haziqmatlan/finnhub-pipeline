@@ -1,5 +1,6 @@
 import websocket, json, threading, time
-from kafka import KafkaProducer
+# from kafka import KafkaProducer
+from confluent_kafka import Producer
 
 
 FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
