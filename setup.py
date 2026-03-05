@@ -11,7 +11,7 @@ PACKAGES_REQUIREMENT = [
     "PyYAML>=6.0.1",
     "python-dotenv==1.0.0",
     # "kafka-python==2.0.2"
-    "confluent-kafka-python"
+    "confluent-kafka-python==2.0.0"
     ]
 
 # Additional dependencies for development (e.g.: for local testing, CI/CD pipeline) - not installed in production environment (not included when the job runs on Databricks)
