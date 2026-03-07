@@ -37,7 +37,9 @@ def on_message(ws, message):
           value=json.dumps(data).encode("utf-8"),
           callback=delivery_report
         ) # queue a message for Kafka delivery
-        producer.flush()    # Forces all buffered messages to deliver to Kafka right away
+        
+        # Kafka will consider as Raw zone instead - to minimize latency
+        producer.flush()    # Forces all buffered messages to deliver to Kafka right away 
 
 def on_error(ws, error):
     print(f"WebSocket error: {error}")

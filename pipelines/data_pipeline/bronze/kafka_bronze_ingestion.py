@@ -13,7 +13,7 @@ CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/trades_stock_data"
 
 
 def etl_process(**options):
-    print("This is the Kafka Bronze Ingestion Pipeline.")
+    print("This is the Kafka Bronze Ingestion process...")
 
     data_schema = StructType([
         StructField("data", ArrayType(StructType([
