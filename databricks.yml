@@ -17,14 +17,55 @@ targets:
         finnhub-pipeline:
           name: "data_pipeline_master"
           tasks:
-          # Dataset Generation --------------------
-            - task_key: "data_generation_task"
+            # RAW: Stock Subscriptions and Data Ingestion to Kafka --------------------
+            - task_key: "stock_subscription_task"
               environment_key: "serverless_env"
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
                 parameters:
                   - "pipelines.data_pipeline.raw.stream_finnhub_to_kafka"
+                  - "--env"
+                  - "dev"
+                  - "--space"
+                  - "feature"
+            # BRONZE: Data Transformation ---------------------------------------------
+            - task_key: "data_ingestion_task"
+              environment_key: "serverless_env"
+              depends_on:
+                - task_key: "stock_subscription_task"
+              python_wheel_task:
+                package_name: "pipelines"
+                entry_point: "etl_pipeline"
+                parameters:
+                  - "pipelines.data_pipeline.bronze.kafka_bronze_ingestion"
+                  - "--env"
+                  - "dev"
+                  - "--space"
+                  - "feature"
+            - task_key: "data_transformation_task"
+              environment_key: "serverless_env"
+              depends_on:
+                - task_key: "data_ingestion_task"
+              python_wheel_task:
+                package_name: "pipelines"
+                entry_point: "etl_pipeline"
+                parameters:
+                  - "pipelines.data_pipeline.bronze.transform_data_task"
+                  - "--env"
+                  - "dev"
+                  - "--space"
+                  - "feature"
+            # SILVER: Data Enrichment ---------------------------------------------
+            - task_key: "data_enrichment_task"
+              environment_key: "serverless_env"
+              depends_on:
+                - task_key: "data_transformation_task"
+              python_wheel_task:
+                package_name: "pipelines"
+                entry_point: "etl_pipeline"
+                parameters:
+                  - "pipelines.data_pipeline.silver.load_data_task"
                   - "--env"
                   - "dev"
                   - "--space"
@@ -38,7 +79,8 @@ targets:
                 dependencies:
                   - ./dist/*.whl  # Wheel library specified here for serverless
           timeout_seconds: 3600
-
+  
+  # ------------------------------------------------------------------------------------------------------------------------
   prod_release:
     mode: production
     default: true

@@ -1,58 +1,67 @@
-import websocket, json, threading, time
-# from kafka import KafkaProducer
+import websocket
+import threading
+import time
+import json
 from confluent_kafka import Producer
 
 
 FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
 KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
+KAFKA_TOPIC = "finnhub_topic"
 KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
 KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
 
-KAFKA_TOPIC = "finnhub_topic"
-VOLUME_PATH = "/Volumes/finnhub_mlops_dev/feature_raw_data/trades_stock_data"   # Unity Catalog Volume
-CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/feature_raw_data/checkpoints"
-symbols = []
-
+# ─── Kafka Producer ──────────────────────────────────────────────────────────
 # Bridge b/w Websocket & Kafka
-producer = KafkaProducer(
-    bootstrap_servers=KAFKA_BOOTSTRAP,
-    security_protocol='SASL_SSL',   # Confluent always uses encrypted, authenticated connections
-    sasl_mechanism='PLAIN',
-    sasl_plain_username=KAFKA_USERNAME,
-    sasl_plain_password=KAFKA_PASSWORD,
-    value_serializer=lambda v: json.dumps(v).encode('utf-8')
-    )
+conf = {
+  "bootstrap.servers": f"{KAFKA_BOOTSTRAP}",
+  "security.protocol": "SASL_SSL",
+  "sasl.mechanism": "PLAIN",
+  "sasl.username": f"{KAFKA_USERNAME}",
+  "sasl.password": f"{KAFKA_PASSWORD}"
+}
+producer = Producer(conf)
 
-# Websocket callback functions
+def delivery_report(err, msg):
+    if err is not None:
+        print(f"Delivery failed: {err}")
+    else:
+        print(f"Message delivered to {msg.topic()}...")
+
+# ─── WebSocket Callback ──────────────────────────────────────────────────────
 def on_message(ws, message):
     data = json.loads(message)
-    if data.get("type") == "trade":
-        producer.send(KAFKA_TOPIC, value=data)  # Send trade data to Kafka topic
-        producer.flush()  # Ensure all buffered data is sent immediately
+    if data.get('type') == "trade":
+        producer.produce(
+          KAFKA_TOPIC, 
+          value=json.dumps(data).encode("utf-8"),
+          callback=delivery_report
+        ) # queue a message for Kafka delivery
+        producer.flush()    # Forces all buffered messages to deliver to Kafka right away
 
 def on_error(ws, error):
     print(f"WebSocket error: {error}")
 
 def on_close(ws, close_status_code, close_msg):
-    print(f"Connection closed: {close_status_code}\n message: {close_msg}")
+    print(f"Connection closed: {close_status_code} | {close_msg}")
 
+#--Send all data to Kafka------------------
 def on_open(ws):
-    ws.send(' {"type": "subscribe", "symbol": "BINANCE:BTCUSDT"} ') 
-    print("Subscribed to BINANCE:BTCUSDT...")
-
+    ws.send('{"type":"subscribe","symbol":"AAPL"}')
+    ws.send('{"type":"subscribe","symbol":"AMZN"}')
+    ws.send('{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}')
 
 def etl_process(**options):
-    ws = websocket.WebSocketApp(
-        f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
-        on_open=on_open,
-        on_message=on_message,
-        on_error=on_error,
-        on_close=on_close
-        )
+    ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
+                                    on_open=on_open,
+                                    on_message = on_message,
+                                    on_error = on_error,
+                                    on_close = on_close)
 
+    # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
     thread = threading.Thread(target=ws.run_forever)
     thread.start()
-    time.sleep(10)  # Keep the main thread alive for 10 seconds to receive messages
+    time.sleep(10)
 
     ws.keep_running = False # Signal the WebSocket run_forever() to stop 
     ws.close()              # Close the WebSocket connection gracefully
