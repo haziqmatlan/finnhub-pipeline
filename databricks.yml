@@ -15,7 +15,7 @@ targets:
     resources:
       jobs:
         finnhub-pipeline:
-          name: "data_pipeline_master"
+          name: "finnhub_data_pipeline_master"
           tasks:
             # RAW: Stock Subscriptions and Data Ingestion to Kafka --------------------
             - task_key: "stock_subscription_task"

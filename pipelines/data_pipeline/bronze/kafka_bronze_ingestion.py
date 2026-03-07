@@ -31,8 +31,8 @@ def etl_process(**options):
         .option("kafka.bootstrap.servers", KAFKA_BOOTSTRAP) \
         .option("kafka.security.protocol", "SASL_SSL") \
         .option("kafka.sasl.mechanism", "PLAIN") \
-        .option("kafka.sasl.username", KAFKA_USERNAME) \
-        .option("kafka.sasl.password", KAFKA_PASSWORD) \
+        .option("kafka.sasl.jaas.config", 
+            f'kafkashaded.org.apache.kafka.common.security.plain.PlainLoginModule required username="{KAFKA_USERNAME}" password="{KAFKA_PASSWORD}";') \
         .option("subscribe", KAFKA_TOPIC) \
         .option("startingOffsets", "earliest") \
         .option("failOnDataLoss", "false") \
