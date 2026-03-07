@@ -1,5 +1,4 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import from_unixtime, col
 
 spark = SparkSession.builder.appName("Load Silver Data").getOrCreate()
 

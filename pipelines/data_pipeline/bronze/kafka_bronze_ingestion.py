@@ -1,5 +1,5 @@
 from pyspark.sql import SparkSession
-from pyspark.sql.types import StructType, StructField, StringType, IntegerType, BooleanType, TimeType, DoubleType, LongType, ArrayType, BinaryType, TimestampType
+from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 from pyspark.sql.functions import col, from_json, explode
 
 spark = SparkSession.builder.appName("Kafka Bronze Ingestion").getOrCreate()
