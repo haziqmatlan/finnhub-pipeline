@@ -31,6 +31,7 @@ def delivery_report(err, msg):
 # ─── WebSocket Callback ──────────────────────────────────────────────────────
 def on_message(ws, message):
     data = json.loads(message)
+    print(f"Received message: {data}")
     if data.get('type') == "trade":
         producer.produce(
           KAFKA_TOPIC, 
