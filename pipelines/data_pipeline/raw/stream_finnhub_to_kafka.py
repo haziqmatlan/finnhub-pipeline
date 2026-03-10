@@ -69,12 +69,12 @@ def etl_process(**options):
                                     on_close = on_close)
     ws.run_forever()
 
-    # # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
-    # thread = threading.Thread(target=ws.run_forever)
-    # thread.start()
-    # time.sleep(10)
+    # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
+    thread = threading.Thread(target=ws.run_forever)
+    thread.start()
+    time.sleep(600)
 
-    # ws.keep_running = False # Signal the WebSocket run_forever() to stop 
-    # ws.close()              # Close the WebSocket connection gracefully
-    # thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
-    # print("WebSocket connection closed, thread joined...")
+    ws.keep_running = False # Signal the WebSocket run_forever() to stop 
+    ws.close()              # Close the WebSocket connection gracefully
+    thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
+    print("WebSocket connection closed, thread joined...")

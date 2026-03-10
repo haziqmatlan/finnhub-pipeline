@@ -30,7 +30,7 @@ def etl_process(**options):
         .option("checkpointLocation", CHECKPOINT_PATH) \
         .option("mergeSchema", "true") \
         .outputMode("append") \
-        .trigger(processingTime="30 seconds") \
+        .trigger(availableNow=True) \
         .toTable(silver_table)
     
     query.awaitTermination()

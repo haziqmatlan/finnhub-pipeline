@@ -53,7 +53,7 @@ def etl_process(**options):
             .format("delta")
             .option("checkpointLocation", CHECKPOINT_PATH)
             .outputMode("append")
-            .trigger(processingTime="1 minute")   # Produce new candles every minute
+            .trigger(availableNow=True)   # Produce new candles every minute
             .toTable(gold_table)
     )
     query.awaitTermination()

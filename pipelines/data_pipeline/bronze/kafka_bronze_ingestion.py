@@ -66,10 +66,10 @@ def etl_process(**options):
             .option("checkpointLocation", CHECKPOINT_PATH)
             .option("mergeSchema", "true")
             .outputMode("append")
-            .trigger(processingTime="30 seconds")
+            .trigger(availableNow=True)  # Process all available data and then stop. Unable to use processingTime="30 seconds" due serverless cluster limitations (no long-running jobs allowed)
             .toTable("finnhub_mlops_dev.feature_bronze_data.kafka_ingest_data") 
     )
-    
+
     # awaitTermination() keeps the job alive indefinitely, continuously
     # processing micro-batches (every 30 seconds). Without this, the job would exit immediately.
     query.awaitTermination()
