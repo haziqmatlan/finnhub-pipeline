@@ -68,7 +68,6 @@ def etl_process(**options):
                                     on_message = on_message,
                                     on_error = on_error,
                                     on_close = on_close)
-    ws.run_forever()
 
     # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
     thread = threading.Thread(target=ws.run_forever)

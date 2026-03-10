@@ -25,12 +25,14 @@ def etl_process(**options):
         .filter( col("price") > 0 ) \
         .filter( col("symbol").isNotNull() ) \
 
-    query = clean_df.writeStream \
-        .format("delta") \
-        .option("checkpointLocation", CHECKPOINT_PATH) \
-        .option("mergeSchema", "true") \
-        .outputMode("append") \
-        .trigger(availableNow=True) \
-        .toTable(silver_table)
+    query = (
+        clean_df.writeStream \
+            .format("delta") \
+            .option("checkpointLocation", CHECKPOINT_PATH) \
+            .option("mergeSchema", "true") \
+            .outputMode("append") \
+            .trigger(availableNow=True) \
+            .toTable(silver_table)
+    )
     
     query.awaitTermination()

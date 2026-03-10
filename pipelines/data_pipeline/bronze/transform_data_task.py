@@ -22,14 +22,15 @@ def etl_process(**options):
     time_df = kafka_df.withColumn("time_stamp", from_unixtime( (col("timestamp")/1000).cast("double") ))
     time_df = time_df.selectExpr("*", "CAST(time_stamp AS TIMESTAMP) AS time")
 
-    query = time_df.writeStream \
-        .format("delta") \
-        .option("checkpointLocation", CHECKPOINT_PATH) \
-        .option("mergeSchema", "true") \
-        .outputMode("append") \
-        .trigger(availableNow=True) \
-        .toTable(bronze_table)
+    query = (
+        time_df.writeStream \
+            .format("delta") \
+            .option("checkpointLocation", CHECKPOINT_PATH) \
+            .option("mergeSchema", "true") \
+            .outputMode("append") \
+            .trigger(availableNow=True) \
+            .toTable(bronze_table)
+    )
 
-    # awaitTermination() keeps the job alive indefinitely, continuously
-    # processing micro-batches (every 30 seconds). Without this, the job would exit immediately.
+    # Wait until AvailableNow finishes processing its current batch, then let the job exit cleanly.
     query.awaitTermination()

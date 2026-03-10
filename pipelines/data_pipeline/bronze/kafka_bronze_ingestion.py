@@ -70,7 +70,6 @@ def etl_process(**options):
             .toTable("finnhub_mlops_dev.feature_bronze_data.kafka_ingest_data") 
     )
 
-    # awaitTermination() keeps the job alive indefinitely, continuously
-    # processing micro-batches (every 30 seconds). Without this, the job would exit immediately.
+    # Wait until AvailableNow finishes processing its current batch, then let the job exit cleanly.
     query.awaitTermination()
         
