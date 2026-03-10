@@ -18,10 +18,10 @@ targets:
           name: "finnhub_data_pipeline_master"
           # Schedule the job to run every 5 minutes. 
           # Ensure availableNow=True is set in the tasks, to process all available data and then stop. Allowing the schedule to trigger the next run and reprocess new data.
-          schedule:
-            quartz_cron_expression: "0 */5 * * * ?" # Every 5 minutes
-            timezone_id: "UTC"
-            pause_status: "UNPAUSED"  # Set to "PAUSED" to disable the schedule
+          # schedule:
+          #   quartz_cron_expression: "0 */5 * * * ?" # Every 5 minutes
+          #   timezone_id: "UTC"
+          #   pause_status: "UNPAUSED"  # Set to "PAUSED" to disable the schedule
           tasks:
             # RAW: Stock Subscriptions --------------------
             - task_key: "stock_subscription_task"
