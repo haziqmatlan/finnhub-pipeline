@@ -72,7 +72,7 @@ def etl_process(**options):
     # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
     thread = threading.Thread(target=ws.run_forever)
     thread.start()
-    time.sleep(180)  # Let it run for 3 minutes (180 seconds) to collect data
+    time.sleep(120)  # Let it run for 2 minutes (120 seconds) to collect data
 
     ws.keep_running = False # Signal the WebSocket run_forever() to stop 
     ws.close()              # Close the WebSocket connection gracefully

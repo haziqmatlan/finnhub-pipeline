@@ -17,7 +17,7 @@ def etl_process(**options):
 
     bronze_df = spark.readStream \
         .format("delta") \
-        .table("finnhub_mlops_dev.feature_bronze_data.cleaned_stock_data")
+        .table("finnhub_mlops_dev.feature_bronze_data.transformed_stock_data")
     
     # Remove duplicates, clear bad prices, and filter out records with null symbols
     clean_df = bronze_df \
@@ -34,5 +34,5 @@ def etl_process(**options):
             .trigger(availableNow=True) \
             .toTable(silver_table)
     )
-    
+
     query.awaitTermination()
