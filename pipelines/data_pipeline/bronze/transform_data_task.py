@@ -1,16 +1,35 @@
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import from_unixtime, col
 
+'''
+Transforms ingested data (to a readable format).
+    - Transformations involve such as: converting timestamp to human-readable format & extracting relevant fields.
+'''
+
 spark = SparkSession.builder.appName("Transform Bronze Data").getOrCreate()
-bronze_table = "finnhub_mlops_dev.feature_bronze_data.cleaned_stock_data"
+
+CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/transform_data_task"
+bronze_table = "finnhub_mlops_dev.feature_bronze_data.transformed_stock_data"
 
 
 def etl_process(**options):
-    print("This is the Bronze Transformation Data process...")
+    print("Triggering Bronze Transformation Data process...")
 
-    trade_stock = spark.read.table("finnhub_mlops_dev.feature_bronze_data.kafka_ingest_data")
+    kafka_df = spark.readStream \
+        .format("delta") \
+        .table("finnhub_mlops_dev.feature_bronze_data.kafka_ingest_data")
 
-    time_df = trade_stock.withColumn("time_stamp", from_unixtime( (col("timestamp")/1000).cast("double") ))
+    time_df = kafka_df.withColumn("time_stamp", from_unixtime( (col("timestamp")/1000).cast("double") ))
     time_df = time_df.selectExpr("*", "CAST(time_stamp AS TIMESTAMP) AS time")
 
-    time_df.write.format("delta").mode("append").option("mergeSchema", "true").saveAsTable(bronze_table)
+    query = time_df.writeStream \
+        .format("delta") \
+        .option("checkpointLocation", CHECKPOINT_PATH) \
+        .option("mergeSchema", "true") \
+        .outputMode("append") \
+        .trigger(processingTime="30 seconds") \
+        .toTable(bronze_table)
+
+    # awaitTermination() keeps the job alive indefinitely, continuously
+    # processing micro-batches (every 30 seconds). Without this, the job would exit immediately.
+    query.awaitTermination()

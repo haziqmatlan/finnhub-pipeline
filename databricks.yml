@@ -17,7 +17,7 @@ targets:
         finnhub-pipeline:
           name: "finnhub_data_pipeline_master"
           tasks:
-            # RAW: Stock Subscriptions and Data Ingestion to Kafka --------------------
+            # RAW: Stock Subscriptions --------------------
             - task_key: "stock_subscription_task"
               environment_key: "serverless_env"
               python_wheel_task:
@@ -29,11 +29,11 @@ targets:
                   - "dev"
                   - "--space"
                   - "feature"
-            # BRONZE: Data Transformation ---------------------------------------------
+            # BRONZE: Data Ingestion and Transformation ---------------------------------------------
             - task_key: "data_ingestion_task"
               environment_key: "serverless_env"
-              depends_on:
-                - task_key: "stock_subscription_task"
+              # depends_on:
+              #   - task_key: "stock_subscription_task"
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
@@ -56,8 +56,8 @@ targets:
                   - "dev"
                   - "--space"
                   - "feature"
-            # SILVER: Data Enrichment ---------------------------------------------
-            - task_key: "data_enrichment_task"
+            # SILVER: Data Cleaning ---------------------------------------------
+            - task_key: "data_cleaning_task"
               environment_key: "serverless_env"
               depends_on:
                 - task_key: "data_transformation_task"
@@ -65,7 +65,21 @@ targets:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
                 parameters:
-                  - "pipelines.data_pipeline.silver.load_data_task"
+                  - "pipelines.data_pipeline.silver.clean_data_task"
+                  - "--env"
+                  - "dev"
+                  - "--space"
+                  - "feature"
+            # GOLD: Pre-Aggregated data into OHLCV (Open, High, Low, Close, Volume) --------------------
+            - task_key: "data_ohlcv_task"
+              environment_key: "serverless_env"
+              depends_on:
+                - task_key: "data_cleaning_task"
+              python_wheel_task:
+                package_name: "pipelines"
+                entry_point: "etl_pipeline"
+                parameters:
+                  - "pipelines.data_pipeline.gold.ohlcv_data_task"
                   - "--env"
                   - "dev"
                   - "--space"

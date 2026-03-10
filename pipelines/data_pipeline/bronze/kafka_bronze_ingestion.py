@@ -2,6 +2,12 @@ from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 from pyspark.sql.functions import col, from_json, explode
 
+'''
+Fetching real-time stock trade data from Kafka topic:
+    - Connection is established to the Kafka topic using Spark Structured Streaming.
+    - Then, JSON data is parsed and relevant fields are extracted before writing to Delta Lake (append mode).
+'''
+
 spark = SparkSession.builder.appName("Kafka Bronze Ingestion").getOrCreate()
 
 FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
@@ -9,11 +15,11 @@ KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
 KAFKA_TOPIC = "finnhub_topic"
 KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
 KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
-CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/trades_stock_data"
+CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/kafka_bronze_ingestion"
 
 
 def etl_process(**options):
-    print("This is the Kafka Bronze Ingestion process...")
+    print("Triggering Kafka Bronze Ingestion process...")
 
     data_schema = StructType([
         StructField("data", ArrayType(StructType([
@@ -53,16 +59,18 @@ def etl_process(**options):
             col("trade.v").alias("volume")
         )
     
-    # Write stream to Databricks Volume in Delta format
+    # Write the streaming DataFrame to Delta Lake in append mode for every 30 seconds
     query = (
         trades_df.writeStream
             .format("delta")
             .option("checkpointLocation", CHECKPOINT_PATH)
             .option("mergeSchema", "true")
             .outputMode("append")
-            .trigger(availableNow=True)
+            .trigger(processingTime="30 seconds")
             .toTable("finnhub_mlops_dev.feature_bronze_data.kafka_ingest_data") 
     )
-    # Wait for the streaming job to complete
+    
+    # awaitTermination() keeps the job alive indefinitely, continuously
+    # processing micro-batches (every 30 seconds). Without this, the job would exit immediately.
     query.awaitTermination()
         

@@ -42,7 +42,16 @@ def build_subparsers(subparsers) -> list[ArgumentParser]:
     parser.add_argument('--config', help='Configuration file')
     parsers.append(parser)
 
-    task = 'pipelines.data_pipeline.silver.load_data_task'
+    task = 'pipelines.data_pipeline.silver.clean_data_task'
+    parser = subparsers.add_parser(task)
+    parser.set_defaults(command=task)
+    parser.add_argument('-b', '--bucket', help='S3 bucket')
+    parser.add_argument('-e', '--env', choices=environments, required=True, help='Environment')
+    parser.add_argument('-s', '--space', choices=spaces, required=True, help='Space')
+    parser.add_argument('--config', help='Configuration file')
+    parsers.append(parser)
+
+    task = 'pipelines.data_pipeline.gold.ohlcv_data_task'
     parser = subparsers.add_parser(task)
     parser.set_defaults(command=task)
     parser.add_argument('-b', '--bucket', help='S3 bucket')

@@ -4,6 +4,11 @@ import time
 import json
 from confluent_kafka import Producer
 
+'''
+Establishes a WebSocket connection to the Finnhub API:
+    - Receiving real-time stock trade data. 
+    - Then publish the data to Kafka exactly as received — no parsing, filtering & transformation.
+'''
 
 FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
 KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
@@ -55,18 +60,21 @@ def on_open(ws):
     ws.send('{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}')
 
 def etl_process(**options):
+    print("Triggering Stream Finnhub Data to Kafka process...")
+
     ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
                                     on_open=on_open,
                                     on_message = on_message,
                                     on_error = on_error,
                                     on_close = on_close)
+    ws.run_forever()
 
-    # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
-    thread = threading.Thread(target=ws.run_forever)
-    thread.start()
-    time.sleep(10)
+    # # ─── Lauch WebSocket Thread ──────────────────────────────────────────────────
+    # thread = threading.Thread(target=ws.run_forever)
+    # thread.start()
+    # time.sleep(10)
 
-    ws.keep_running = False # Signal the WebSocket run_forever() to stop 
-    ws.close()              # Close the WebSocket connection gracefully
-    thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
-    print("WebSocket connection closed, thread joined...")
+    # ws.keep_running = False # Signal the WebSocket run_forever() to stop 
+    # ws.close()              # Close the WebSocket connection gracefully
+    # thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
+    # print("WebSocket connection closed, thread joined...")
