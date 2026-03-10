@@ -1,3 +1,4 @@
+from time import time
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 from pyspark.sql.functions import col, from_json, explode
@@ -20,6 +21,7 @@ CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/kafka_bronze_ingestion
 
 def etl_process(**options):
     print("Triggering Kafka Bronze Ingestion process...")
+    time.sleep(20)  # Short delay to ensure the WebSocket connection is established and let streaming data flow in before start processing.
 
     data_schema = StructType([
         StructField("data", ArrayType(StructType([

@@ -61,7 +61,6 @@ def on_open(ws):
 
 def etl_process(**options):
     print("Triggering Stream Finnhub Data to Kafka process...")
-    time.sleep(20)  # Short delay to ensure the WebSocket connection is established and let streaming data flow in before start processing.
 
     ws = websocket.WebSocketApp(f"wss://ws.finnhub.io?token={FINNHUB_TOKEN}",
                                     on_open=on_open,
