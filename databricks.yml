@@ -38,8 +38,8 @@ targets:
             # BRONZE: Data Ingestion and Transformation ---------------------------------------------
             - task_key: "data_ingestion_task"
               environment_key: "serverless_env"
-              # depends_on:
-              #   - task_key: "stock_subscription_task"
+              depends_on:
+                - task_key: "stock_subscription_task"
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
