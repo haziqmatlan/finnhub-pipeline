@@ -22,6 +22,7 @@ CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/kafka_bronze_ingestion
 def etl_process(**options):
     print("Triggering Kafka Bronze Ingestion process...")
     time.sleep(20)  # Wait for Kafka producer to start sending data (if not already)
+    print("Starting to read from Kafka topic...")
 
     data_schema = StructType([
         StructField("data", ArrayType(StructType([

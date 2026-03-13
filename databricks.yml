@@ -22,11 +22,12 @@ targets:
             quartz_cron_expression: "0 */5 * * * ?" # Every 5 minutes
             timezone_id: "UTC"
             pause_status: "UNPAUSED"  # Start immediately and keep running on schedule
-          timeout_seconds: 900 # 15 minutes limit
+          timeout_seconds: 600 # 10 minutes limit
 
           tasks:
             # RAW: Stock Subscriptions --------------------
             - task_key: "stock_subscription_task"
+              timeout_seconds: 300 # 5 minutes limit for this task
               environment_key: "serverless_env"
               python_wheel_task:
                 package_name: "pipelines"

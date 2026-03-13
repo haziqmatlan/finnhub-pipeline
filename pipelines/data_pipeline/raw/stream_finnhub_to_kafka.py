@@ -73,6 +73,7 @@ def etl_process(**options):
     thread.start()
     time.sleep(240)  # Let it run for 4 minutes (240 seconds) to collect data
 
+    print("Stopping WebSocket connection...")
     ws.keep_running = False # Signal the WebSocket run_forever() to stop 
     ws.close()              # Close the WebSocket connection gracefully
     thread.join(timeout=5)  # Wait for the thread to finish, with a timeout to prevent hanging indefinitely
