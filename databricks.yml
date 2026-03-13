@@ -16,12 +16,14 @@ targets:
       jobs:
         finnhub-pipeline:
           name: "finnhub_data_pipeline_master"
-          # Schedule the job to run every 5 minutes. 
+          # Schedule the job to run every 5 minutes for 20 minutes limit. 
           # Ensure availableNow=True is set in the tasks, to process all available data and then stop. Allowing the schedule to trigger the next run and reprocess new data.
-          # schedule:
-          #   quartz_cron_expression: "0 */5 * * * ?" # Every 5 minutes
-          #   timezone_id: "UTC"
-          #   pause_status: "UNPAUSED"  # Set to "PAUSED" to disable the schedule
+          schedule:
+            quartz_cron_expression: "0 */5 * * * ?" # Every 5 minutes
+            timezone_id: "UTC"
+            pause_status: "UNPAUSED"  # Start immediately and keep running on schedule
+          timeout_seconds: 900 # 15 minutes limit
+
           tasks:
             # RAW: Stock Subscriptions --------------------
             - task_key: "stock_subscription_task"
@@ -35,11 +37,12 @@ targets:
                   - "dev"
                   - "--space"
                   - "feature"
+                  
             # BRONZE: Data Ingestion and Transformation ---------------------------------------------
             - task_key: "data_ingestion_task"
               environment_key: "serverless_env"
-              depends_on:
-                - task_key: "stock_subscription_task"
+              # depends_on:
+              #   - task_key: "stock_subscription_task"
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
@@ -98,7 +101,6 @@ targets:
                 client: "1"  # Required for serverless compute
                 dependencies:
                   - ./dist/*.whl  # Wheel library specified here for serverless
-          timeout_seconds: 3600
   
   # ------------------------------------------------------------------------------------------------------------------------
   prod_release:
