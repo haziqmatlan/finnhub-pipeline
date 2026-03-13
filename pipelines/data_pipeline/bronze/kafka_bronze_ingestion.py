@@ -1,4 +1,4 @@
-from time import time
+import time
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 from pyspark.sql.functions import col, from_json, explode
