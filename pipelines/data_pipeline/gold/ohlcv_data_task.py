@@ -33,7 +33,7 @@ def etl_process(**options):
         .withWatermark("time", "2 minutes") \
         .groupBy(
             col("symbol"),
-            window(col("time"), "1 minute")     # The tumbling window definition
+            window(col("time"), "1 minute")     # The tumbling window definition (Each chunk processes events that fall within its time boundaries)
         ) \
         .agg(
             first("price").alias("open"),        # First trade price in the window
