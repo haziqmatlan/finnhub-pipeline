@@ -55,7 +55,6 @@ def on_close(ws, close_status_code, close_msg):
 
 #--Send all data to Kafka------------------
 def on_open(ws):
-    ws.send('{"type":"subscribe","symbol":"AAPL"}')
     ws.send('{"type":"subscribe","symbol":"AMZN"}')
     ws.send('{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}')
 

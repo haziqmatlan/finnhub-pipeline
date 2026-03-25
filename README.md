@@ -1,6 +1,6 @@
 # 📈 Finnhub Real-Time Stock Pipeline
 
-> **Production-grade streaming data pipeline** — from live WebSocket trades to OHLCV candlestick dashboards, orchestrated on Databricks with full CI/CD automation.
+> **Streaming data pipeline** — from live Finnhub WebSocket trades to OHLCV candlestick Grafana dashboards, orchestrated on Databricks with full CI/CD automation.
 
 [![Python](https://img.shields.io/badge/Python-3.11-3776AB?logo=python&logoColor=white)](https://python.org)
 [![PySpark](https://img.shields.io/badge/PySpark-3.3-E25A1C?logo=apachespark&logoColor=white)](https://spark.apache.org)
@@ -8,7 +8,6 @@
 [![Delta Lake](https://img.shields.io/badge/Delta_Lake-Medallion-003366)](https://delta.io)
 [![Kafka](https://img.shields.io/badge/Confluent_Kafka-Streaming-231F20?logo=apachekafka&logoColor=white)](https://confluent.io)
 [![GitHub Actions](https://img.shields.io/badge/GitHub_Actions-CI%2FCD-2088FF?logo=githubactions&logoColor=white)](https://github.com/features/actions)
-[![Terraform](https://img.shields.io/badge/Terraform-IaC-7B42BC?logo=terraform&logoColor=white)](https://terraform.io)
 [![Grafana](https://img.shields.io/badge/Grafana-Dashboard-F46800?logo=grafana&logoColor=white)](https://grafana.com)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -23,23 +22,23 @@
 
   ┌──────────────┐     WebSocket      ┌─────────────────────────┐
   │   Finnhub    │ ─────────────────► │  Confluent Cloud Kafka  │
-  │  Trade Feed  │  (AAPL, AMZN,      │     finnhub_topic       │
-  │  (Live API)  │   BTC/USDT)        └────────────┬────────────┘
+  │  Trade Stock │  (AMZN, BTC/USDT)  │     finnhub_topic       │
+  │  (Live API)  │                    └────────────┬────────────┘
   └──────────────┘                                 │
                                      Spark Structured Streaming
                                                    │
                     ┌──────────────────────────────▼──────────────────────────────┐
                     │                   DELTA LAKE  (Databricks)                  │
                     │                                                             │
-                    │  ┌─────────────┐   ┌──────────────┐   ┌───────────────┐   │
-                    │  │   BRONZE    │──►│    SILVER     │──►│     GOLD      │   │
-                    │  │             │   │               │   │               │   │
-                    │  │ • Raw Ingest│   │ • Deduplicate │   │ • OHLCV Agg   │   │
-                    │  │ • JSON Parse│   │ • Null Filter │   │ • 1-min candle│   │
-                    │  │ • Timestamp │   │ • price > 0   │   │ • Per symbol  │   │
-                    │  │   Convert   │   │               │   │               │   │
-                    │  └─────────────┘   └──────────────┘   └───────┬───────┘   │
-                    └─────────────────────────────────────────────────┼─────────┘
+                    │  ┌─────────────┐   ┌───────────────┐   ┌────────────────┐   │
+                    │  │   BRONZE    │──►│    SILVER     │──►│     GOLD       │   │
+                    │  │             │   │               │   │                │   │
+                    │  │ • Raw Ingest│   │ • Deduplicate │   │ • OHLCV Aggr   │   │
+                    │  │ • JSON Parse│   │ • Null Filter │   │ • 1-min candle │   │
+                    │  │ • Timestamp │   │ • price > 0   │   │   Per symbol   │   │
+                    │  │   Convert   │   │               │   │                │   │
+                    │  └─────────────┘   └───────────────┘   └────────┬───────┘   │
+                    └─────────────────────────────────────────────────┼───────────┘
                                                                       │
                                                                ┌──────▼──────┐
                                                                │   Grafana   │
@@ -48,10 +47,8 @@
                                                                └─────────────┘
 
   ┌──────────────────────────────────────────────────────────────────────────────┐
-  │                         ORCHESTRATION & DEPLOYMENT                           │
-  │                                                                              │
-  │   GitHub Actions CI/CD  ──►  Databricks Asset Bundles (DAB)                 │
-  │   Terraform (IaC)       ──►  Kafka / Monitoring Infrastructure              │
+  │                         DEPLOYMENT                                           │
+  │   GitHub Actions CI/CD  ──►  Databricks Asset Bundles (DAB)                  │
   └──────────────────────────────────────────────────────────────────────────────┘
 ```
 
@@ -67,20 +64,19 @@
 | **Spark Structured Streaming** | `availableNow` trigger pattern for serverless-compatible micro-batch processing |
 | **DAB Orchestration** | Full task dependency graph managed via Databricks Asset Bundles |
 | **CI/CD Automation** | GitHub Actions deploys and runs the DAB job on every trigger |
-| **IaC with Terraform** | Kafka and monitoring infra provisioned declaratively |
 | **Multi-Environment** | `dev_feature`, `test_synthetic`, `prod_release` target isolation |
 
 ---
 
 ## 🧱 Pipeline Stages
 
-### `RAW` — WebSocket Producer → Kafka
+### **RAW**: WebSocket Producer → Kafka
 
 **File:** `pipelines/data_pipeline/raw/stream_finnhub_to_kafka.py`
 
 Establishes a persistent WebSocket connection to the [Finnhub API](https://finnhub.io/) and publishes raw trade messages to Confluent Cloud Kafka with zero transformation — preserving the original payload for full auditability.
 
-- Subscribes to **AAPL**, **AMZN**, and **BINANCE:BTCUSDT** trade feeds
+- Subscribes to **AMZN**, and **BINANCE:BTCUSDT** trade feeds
 - Runs for a configurable duration (default: 4 minutes) per DAB job cycle
 - Uses `producer.flush()` after each message for low-latency delivery
 - Designed to run in a separate Databricks task, decoupled from the ingestion layer
@@ -91,7 +87,7 @@ Finnhub WebSocket  ──►  confluent_kafka.Producer  ──►  Confluent Clo
 
 ---
 
-### `BRONZE` — Kafka Ingestion & Timestamp Transformation
+### **BRONZE**: Kafka Ingestion & Timestamp Transformation
 
 **Files:** `bronze/kafka_bronze_ingestion.py` · `bronze/transform_data_task.py`
 
@@ -115,7 +111,7 @@ Kafka Topic  ──►  JSON Parse & Explode  ──►  kafka_ingest_data (Delt
 
 ---
 
-### `SILVER` — Data Cleaning
+### **SILVER**: Data Cleaning
 
 **File:** `pipelines/data_pipeline/silver/clean_data_task.py`
 
@@ -135,7 +131,7 @@ transformed_stock_data  ──►  Dedup + Filter  ──►  cleaned_stock_data
 
 ---
 
-### `GOLD` — OHLCV Pre-Aggregation
+### **GOLD**: OHLCV Pre-Aggregation
 
 **File:** `pipelines/data_pipeline/gold/ohlcv_data_task.py`
 
@@ -361,7 +357,7 @@ databricks bundle run -t dev_feature finnhub-pipeline \
 |---|---|---|
 | `conditions` | `Array[Integer]` | Trade condition codes |
 | `price` | `Double` | Trade execution price |
-| `symbol` | `String` | Stock ticker (e.g. `AAPL`) |
+| `symbol` | `String` | Stock ticker (e.g. `AMZN`) |
 | `timestamp` | `Long` | Unix epoch in milliseconds |
 | `volume` | `Double` | Number of shares traded |
 
