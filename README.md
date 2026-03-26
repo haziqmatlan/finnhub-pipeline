@@ -74,10 +74,10 @@
 
 **File:** `pipelines/data_pipeline/raw/stream_finnhub_to_kafka.py`
 
-Establishes a persistent WebSocket connection to the [Finnhub API](https://finnhub.io/) and publishes raw trade messages to Confluent Cloud Kafka with zero transformation — preserving the original payload for full auditability.
+Establishes WebSocket connection to the [Finnhub API](https://finnhub.io/) and publishes raw trade messages to Confluent Cloud Kafka with zero transformation — preserving the original payload for full auditability.
 
-- Subscribes to **AMZN**, and **BINANCE:BTCUSDT** trade feeds
-- Runs for a configurable duration (default: 4 minutes) per DAB job cycle
+- Subscribes to **AMZN**, and **BINANCE:BTCUSDT** trade data
+- Runs for a duration of 4 minutes per DAB job cycle, for data collection purposes
 - Uses `producer.flush()` after each message for low-latency delivery
 - Designed to run in a separate Databricks task, decoupled from the ingestion layer
 
@@ -92,21 +92,21 @@ Finnhub WebSocket  ──►  confluent_kafka.Producer  ──►  Confluent Clo
 **Files:** `bronze/kafka_bronze_ingestion.py` · `bronze/transform_data_task.py`
 
 **Step 1 — Kafka Ingestion (`kafka_bronze_ingestion`):**  
-Reads the raw Kafka topic as a Spark Structured Streaming DataFrame, parses the nested JSON schema, explodes the `data` array, and writes trade fields (`price`, `symbol`, `timestamp`, `volume`, `conditions`) to a Delta Lake table.
+Reads the raw Kafka topic (finnhub_topic) as a Spark Structured Streaming DataFrame, parses the nested JSON schema, explodes the `data` array, and writes trade fields (`price`, `symbol`, `timestamp`, `volume`, `conditions`) to a Delta Lake table.
 
 - `startingOffsets: earliest` ensures no data loss between runs
-- `failOnDataLoss: false` handles Confluent Cloud log compaction gracefully
+- `failOnDataLoss: false` Spark will not fail if there's data loss, but will continue processing next available offset
 - `trigger(availableNow=True)` processes all pending offsets then exits — compatible with Databricks Serverless which does not allow long-running streaming jobs
 
 **Step 2 — Timestamp Transformation (`transform_data_task`):**  
 Reads from the raw Bronze table and converts the Unix millisecond timestamp to a human-readable `TIMESTAMP` column (`time`), making downstream time-window operations straightforward.
 
 ```
-Kafka Topic  ──►  JSON Parse & Explode  ──►  kafka_ingest_data (Delta)
+Kafka Topic  ──►  JSON Parse & Explode  ──►  kafka_ingest_data (Delta table)
                                                        │
                                          from_unixtime(timestamp/1000)
                                                        │
-                                         transformed_stock_data (Delta)
+                                         transformed_stock_data (Delta table)
 ```
 
 ---
@@ -126,7 +126,7 @@ Reads the transformed Bronze table as a stream and applies three quality filters
 Output is written with `mergeSchema: true` to allow safe schema evolution as new symbols or fields are introduced.
 
 ```
-transformed_stock_data  ──►  Dedup + Filter  ──►  cleaned_stock_data (Delta)
+transformed_stock_data  ──►  Dedup + Filter  ──►  cleaned_stock_data (Delta table)
 ```
 
 ---
@@ -149,8 +149,8 @@ Aggregates every trade into **1-minute OHLCV candlesticks** per symbol — the s
 )
 ```
 
-- **Watermark of 2 minutes** handles late-arriving events without indefinitely buffering state
-- **Tumbling windows** guarantee no overlap between candle intervals
+- **Watermark of 2 minutes** allow Sparks to handle late-arriving events (in streaming, data doesn’t always arrive in order) and accept delayed data. 
+- **Tumbling windows** guarantee that each event is grouped into exactly one fixed interval (1 minute), no overlap between candle intervals
 - Output schema (`symbol`, `candle_time`, `open`, `high`, `low`, `close`, `volume`) maps directly to Grafana axes
 
 ```
@@ -166,9 +166,8 @@ finnhub-pipeline/
 │
 ├── .github/
 │   └── workflows/
-│       ├── data_pipeline.yml               # Dispatch trigger — env/space/job_type inputs
-│       ├── data_pipeline_launch_workflow.yml  # Reusable: deploy DAB + run job
-│       └── terraform.yml                   # Infra plan & apply on merge to master
+│       ├── data_pipeline.yml                   # Dispatch trigger — env/space/job_type inputs
+│       ├── data_pipeline_launch_workflow.yml   # Reusable: deploy DAB + run job
 │
 ├── modules/
 │   ├── kafka/                              # Terraform: Confluent Cloud Kafka config
@@ -270,85 +269,6 @@ GIT_TOKEN           # GitHub token for private repo access
 
 ---
 
-## 🛠️ Infrastructure as Code (Terraform)
-
-Kafka and monitoring infrastructure is provisioned declaratively using Terraform, with separate `tfvars` per environment.
-
-```
-modules/
-├── kafka/          # Confluent Cloud topic & ACL configuration
-└── monitoring/     # Grafana data source & dashboard provisioning
-```
-
-The `terraform.yml` workflow runs `plan` on every pull request and `apply` on merge to `master`.
-
----
-
-## 🔧 Local Development Setup
-
-### Prerequisites
-
-- Python 3.11+
-- Databricks CLI
-- Access to a Confluent Cloud Kafka cluster
-- Access to a Databricks workspace (Community Edition or above)
-
-### 1. Clone & Install
-
-```bash
-git clone https://github.com/haziqmatlan/finnhub-pipeline.git
-cd finnhub-pipeline
-
-python -m venv venv && source venv/bin/activate
-pip install -e ".[dev]"
-```
-
-### 2. Configure Secrets
-
-All credentials are managed via environment variables. Create a `.env` file (never committed):
-
-```bash
-# Finnhub
-FINNHUB_TOKEN=your_finnhub_api_token
-
-# Confluent Cloud Kafka
-KAFKA_BOOTSTRAP=your-cluster.aws.confluent.cloud:9092
-KAFKA_TOPIC=finnhub_topic
-KAFKA_USERNAME=your_api_key
-KAFKA_PASSWORD=your_api_secret
-
-# Databricks
-DATABRICKS_HOST=https://your-workspace.cloud.databricks.com
-DATABRICKS_TOKEN=your_databricks_token
-```
-
-> **Security note:** For production Databricks jobs, store all secrets in [Databricks Secrets](https://docs.databricks.com/en/security/secrets/index.html) and reference them via `dbutils.secrets.get()` rather than environment variables.
-
-### 3. Configure Databricks CLI
-
-```bash
-databricks configure --token
-# Enter: DATABRICKS_HOST, then DATABRICKS_TOKEN when prompted
-```
-
-### 4. Deploy & Run Locally
-
-```bash
-# Build the wheel
-python setup.py bdist_wheel
-
-# Deploy the bundle to dev_feature
-databricks bundle deploy -t dev_feature
-
-# Run the full pipeline
-databricks bundle run -t dev_feature finnhub-pipeline \
-  --python-named-params env=dev \
-  --python-named-params space=feature \
-  --python-named-params job_type=data_pipeline
-```
-
----
-
 ## 📊 Delta Lake Table Schema
 
 ### Bronze — `kafka_ingest_data`
@@ -404,24 +324,11 @@ WebSocket delivery and Kafka lag can introduce minor event-time skew. A 2-minute
 
 ---
 
-## 📦 Python Package
-
-The project is packaged as an installable Python wheel (`pipelines`), with a console script entry point:
-
-```bash
-# Installed as:
-finnhub-etl-pipeline pipelines.data_pipeline.gold.ohlcv_data_task --env dev --space feature
-```
-
-The `entry_point.py` dispatcher uses Python's `importlib` to dynamically resolve the target module from the CLI argument, then calls its `etl_process(**options)` function — keeping all task modules decoupled from the runner.
-
----
-
 ## 🔗 Links
 
 | Resource | URL |
 |---|---|
-| **Portfolio** | [haziqmatlan.github.io/data-pipeline](https://haziqmatlan.github.io/data-pipeline/) |
+| **Portfolio** | [github.com/haziqmatlan](https://github.com/haziqmatlan) |
 | **GitHub** | [github.com/haziqmatlan/finnhub-pipeline](https://github.com/haziqmatlan/finnhub-pipeline) |
 | **Finnhub API Docs** | [finnhub.io/docs/api](https://finnhub.io/docs/api) |
 | **Databricks Asset Bundles** | [docs.databricks.com/dev-tools/bundles](https://docs.databricks.com/dev-tools/bundles/index.html) |
@@ -433,7 +340,7 @@ The `entry_point.py` dispatcher uses Python's `importlib` to dynamically resolve
 
 **Haziq Matlan**  
 Data Quality Engineer → Data Engineer  
-[haziq.matlan@gmail.com](mailto:haziq.matlan@gmail.com) · [GitHub](https://github.com/haziqmatlan) · [Portfolio](https://haziqmatlan.github.io/data-pipeline/)
+[haziq.matlan@gmail.com](mailto:haziq.matlan@gmail.com) · [GitHub](https://github.com/haziqmatlan)
 
 ---
 
