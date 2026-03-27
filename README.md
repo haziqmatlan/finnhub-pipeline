@@ -54,6 +54,17 @@
 
 ---
 
+## 📸 Screenshots & Demo
+
+### Grafana OHLCV Candlestick Dashboard
+![BINANCE](docs/assets/Finnhub Stock Exchange - Dashboards - BINANCE.png)
+![AMAZON](docs/assets/Finnhub Stock Exchange - Dashboards - AMAZON.png)
+
+### Dashboard Demo
+[![Stock Exchange Demo](docs/assets/Finnhub Stock Movement Dashboard.gif)]
+
+---
+
 ## ⚡ Key Features
 
 | Feature | Description |
