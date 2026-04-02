@@ -2,6 +2,13 @@ import time
 from pyspark.sql import SparkSession
 from pyspark.sql.types import StructType, StructField, StringType, IntegerType, DoubleType, LongType, ArrayType
 from pyspark.sql.functions import col, from_json, explode
+from pipelines.core.constant import (
+    FINNHUB_TOKEN,
+    KAFKA_BOOTSTRAP,
+    KAFKA_TOPIC,
+    KAFKA_USERNAME,
+    KAFKA_PASSWORD
+)
 
 '''
 Fetching real-time stock trade data from Kafka topic:
@@ -11,11 +18,11 @@ Fetching real-time stock trade data from Kafka topic:
 
 spark = SparkSession.builder.appName("Kafka Bronze Ingestion").getOrCreate()
 
-FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
-KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
-KAFKA_TOPIC = "finnhub_topic"
-KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
-KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
+# FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
+# KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
+# KAFKA_TOPIC = "finnhub_topic"
+# KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
+# KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
 CHECKPOINT_PATH = "/Volumes/finnhub_mlops_dev/checkpoints/kafka_bronze_ingestion"
 
 

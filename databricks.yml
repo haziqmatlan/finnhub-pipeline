@@ -5,6 +5,19 @@
 bundle:
   name: finnhub-pipeline
 
+variables:
+  # Define any variables that can be used across the bundle
+  finnhub_token:
+    description: "API token for Finnhub"
+  kafka_bootstrap:
+    description: "Confluent Cloud bootstrap server address"
+  kafka_username:
+    description: "Kafka username"
+  kafka_password:
+    description: "Kafka password"
+  kafka_topic:
+    description: "Kafka topic"
+
 targets:
   dev_feature:
     mode: development
@@ -29,6 +42,12 @@ targets:
             - task_key: "stock_subscription_task"
               timeout_seconds: 300 # 5 minutes limit for this task
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
@@ -42,6 +61,12 @@ targets:
             # BRONZE: Data Ingestion and Transformation ---------------------------------------------
             - task_key: "data_ingestion_task"
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               # depends_on:
               #   - task_key: "stock_subscription_task"
               python_wheel_task:
@@ -55,6 +80,12 @@ targets:
                   - "feature"
             - task_key: "data_transformation_task"
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               depends_on:
                 - task_key: "data_ingestion_task"
               python_wheel_task:
@@ -69,6 +100,12 @@ targets:
             # SILVER: Data Cleaning ---------------------------------------------
             - task_key: "data_cleaning_task"
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               depends_on:
                 - task_key: "data_transformation_task"
               python_wheel_task:
@@ -83,6 +120,12 @@ targets:
             # GOLD: Pre-Aggregated data into OHLCV (Open, High, Low, Close, Volume) --------------------
             - task_key: "data_ohlcv_task"
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               depends_on:
                 - task_key: "data_cleaning_task"
               python_wheel_task:
@@ -98,6 +141,12 @@ targets:
           # Serverless environment config (serverless, libraries go in environments.spec.dependencies)
           environments:
             - environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               spec:
                 client: "1"  # Required for serverless compute
                 dependencies:
@@ -118,6 +167,12 @@ targets:
           # Dataset Generation --------------------
             - task_key: "data_generation_task"
               environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               python_wheel_task:
                 package_name: "pipelines"
                 entry_point: "etl_pipeline"
@@ -131,6 +186,12 @@ targets:
           # Serverless environment config (serverless, libraries go in environments.spec.dependencies)
           environments:
             - environment_key: "serverless_env"
+              environment_variables:
+                FINNHUB_TOKEN: ${var.finnhub_token}
+                KAFKA_BOOTSTRAP: ${var.kafka_bootstrap}
+                KAFKA_USERNAME: ${var.kafka_username}
+                KAFKA_PASSWORD: ${var.kafka_password}
+                KAFKA_TOPIC: ${var.kafka_topic}
               spec:
                 client: "1"  # Required for serverless compute
                 dependencies:

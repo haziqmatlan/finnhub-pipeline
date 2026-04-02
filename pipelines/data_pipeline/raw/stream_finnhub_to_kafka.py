@@ -3,6 +3,13 @@ import threading
 import time
 import json
 from confluent_kafka import Producer
+from pipelines.core.constant import (
+    FINNHUB_TOKEN,
+    KAFKA_BOOTSTRAP,
+    KAFKA_TOPIC,
+    KAFKA_USERNAME,
+    KAFKA_PASSWORD
+)
 
 '''
 Establishes a WebSocket connection to the Finnhub API:
@@ -10,11 +17,11 @@ Establishes a WebSocket connection to the Finnhub API:
     - Then publish the data to Kafka exactly as received — no parsing, filtering & transformation.
 '''
 
-FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
-KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
-KAFKA_TOPIC = "finnhub_topic"
-KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
-KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
+# FINNHUB_TOKEN = "d683319r01qobepjs73gd683319r01qobepjs740"
+# KAFKA_BOOTSTRAP = "pkc-7qyr9j.ap-southeast-5.aws.confluent.cloud:9092"
+# # KAFKA_TOPIC = "finnhub_topic"
+# KAFKA_USERNAME = "NOZOITJU6CB2DBLX"
+# KAFKA_PASSWORD = "cfltMmGvY52Tl+KXMD2yZS/6cmCddUAg7fhKR84KzGpFTnZ6uiUZFGXKhYPtVlbQ"
 
 # ─── Kafka Producer ──────────────────────────────────────────────────────────
 # Bridge b/w Websocket & Kafka

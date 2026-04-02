@@ -19,6 +19,14 @@ on:
         required: true 
       DATABRICKS_TOKEN:
         required: true
+      FINNHUB_TOKEN:
+        required: true
+      KAFKA_BOOTSTRAP:
+        required: true
+      KAFKA_USERNAME:
+        required: true
+      KAFKA_PASSWORD:
+        required: true
 
 jobs:
   deploy-and-launch:
@@ -28,6 +36,11 @@ jobs:
       GIT_TOKEN: ${{ secrets.GIT_TOKEN }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
+      FINNHUB_TOKEN: ${{ secrets.FINNHUB_TOKEN }}
+      KAFKA_BOOTSTRAP: ${{ secrets.KAFKA_BOOTSTRAP }}
+      KAFKA_USERNAME: ${{ secrets.KAFKA_USERNAME }}
+      KAFKA_PASSWORD: ${{ secrets.KAFKA_PASSWORD }}
+      KAFKA_TOPIC: ${{ secrets.KAFKA_TOPIC }}
     
     steps:
       - name: Checkout code
@@ -61,9 +74,15 @@ jobs:
       - name: Build Wheel
         run: python setup.py bdist_wheel
 
+      # Pass secrets as variables during deployment of desired environment and space
       - name: Deploy DAB job
         run: |
-          databricks bundle deploy -t ${{ inputs.environment}}_${{ inputs.space}}
+          databricks bundle deploy -t ${{ inputs.environment }}_${{ inputs.space }} \
+          --var = "finnhub_token=${{ secrets.FINNHUB_TOKEN }}" \
+          --var = "kafka_bootstrap=${{ secrets.KAFKA_BOOTSTRAP }}" \
+          --var = "kafka_username=${{ secrets.KAFKA_USERNAME }}" \
+          --var = "kafka_password=${{ secrets.KAFKA_PASSWORD }}" \
+          --var = "kafka_topic=${{ secrets.KAFKA_TOPIC }}"
 
       - name: Launch DAB job
         run: |
