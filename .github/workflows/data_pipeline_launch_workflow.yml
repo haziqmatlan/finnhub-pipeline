@@ -76,13 +76,19 @@ jobs:
 
       # Pass secrets as variables during deployment of desired environment and space
       - name: Deploy DAB job
+        env:
+          BUNDLE_VAR_finnhub_token: ${{ secrets.FINNHUB_TOKEN }}
+          BUNDLE_VAR_kafka_bootstrap: ${{ secrets.KAFKA_BOOTSTRAP }}
+          BUNDLE_VAR_kafka_username: ${{ secrets.KAFKA_USERNAME }}
+          BUNDLE_VAR_kafka_password: ${{ secrets.KAFKA_PASSWORD }}
+          BUNDLE_VAR_kafka_topic: ${{ secrets.KAFKA_TOPIC }}
+          # --var="finnhub_token=${{ secrets.FINNHUB_TOKEN }}" \
+          # --var="kafka_bootstrap=${{ secrets.KAFKA_BOOTSTRAP }}" \
+          # --var="kafka_username=${{ secrets.KAFKA_USERNAME }}" \
+          # --var="kafka_password=${{ secrets.KAFKA_PASSWORD }}" \
+          # --var="kafka_topic=${{ secrets.KAFKA_TOPIC }}"
         run: |
-          databricks bundle deploy -t ${{ inputs.environment }}_${{ inputs.space }} \
-          --var="finnhub_token=${{ secrets.FINNHUB_TOKEN }}" \
-          --var="kafka_bootstrap=${{ secrets.KAFKA_BOOTSTRAP }}" \
-          --var="kafka_username=${{ secrets.KAFKA_USERNAME }}" \
-          --var="kafka_password=${{ secrets.KAFKA_PASSWORD }}" \
-          --var="kafka_topic=${{ secrets.KAFKA_TOPIC }}"
+          databricks bundle deploy -t ${{ inputs.environment }}_${{ inputs.space }} 
 
       - name: Launch DAB job
         run: |
