@@ -78,11 +78,11 @@ jobs:
       - name: Deploy DAB job
         run: |
           databricks bundle deploy -t ${{ inputs.environment }}_${{ inputs.space }} \
-          --var = "finnhub_token=${{ secrets.FINNHUB_TOKEN }}" \
-          --var = "kafka_bootstrap=${{ secrets.KAFKA_BOOTSTRAP }}" \
-          --var = "kafka_username=${{ secrets.KAFKA_USERNAME }}" \
-          --var = "kafka_password=${{ secrets.KAFKA_PASSWORD }}" \
-          --var = "kafka_topic=${{ secrets.KAFKA_TOPIC }}"
+          --var="finnhub_token=${{ secrets.FINNHUB_TOKEN }}" \
+          --var="kafka_bootstrap=${{ secrets.KAFKA_BOOTSTRAP }}" \
+          --var="kafka_username=${{ secrets.KAFKA_USERNAME }}" \
+          --var="kafka_password=${{ secrets.KAFKA_PASSWORD }}" \
+          --var="kafka_topic=${{ secrets.KAFKA_TOPIC }}"
 
       - name: Launch DAB job
         run: |
