@@ -15,9 +15,8 @@ OBJECT_TYPE_OPTION = 'object_type'
 JOB_TYPE_OPTION = 'job_type'
 
 # Constants for Kafka & Finnhub API
-FINNHUB_TOKEN = os.environ["FINNHUB_TOKEN"]
-KAFKA_BOOTSTRAP = os.environ["KAFKA_BOOTSTRAP"]
-KAFKA_TOPIC = os.environ["KAFKA_TOPIC"]
-KAFKA_USERNAME = os.environ["KAFKA_USERNAME"]
-KAFKA_PASSWORD = os.environ["KAFKA_PASSWORD"]
-KAFKA_TOPIC = os.environ["KAFKA_TOPIC"]
+FINNHUB_TOKEN = os.environ.get("FINNHUB_TOKEN", "")
+KAFKA_BOOTSTRAP = os.environ.get("KAFKA_BOOTSTRAP", "")
+KAFKA_TOPIC = os.environ.get("KAFKA_TOPIC", "")
+KAFKA_USERNAME = os.environ.get("KAFKA_USERNAME", "")
+KAFKA_PASSWORD = os.environ.get("KAFKA_PASSWORD", "")
